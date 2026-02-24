@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - Магазин одежды{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Регистрация</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" class="auth-form">
+        <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Пароль *</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="first_name">Имя *</label>
+            <input type="text" id="first_name" name="first_name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="last_name">Фамилия *</label>
+            <input type="text" id="last_name" name="last_name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Телефон</label>
+            <input type="tel" id="phone" name="phone">
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Адрес</label>
+            <textarea id="address" name="address" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    </form>
+    
+    <p class="auth-link">
+        Уже есть аккаунт? <a href="{{ url_for('login') }}">Войдите</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="checkout-container">
+    <h1>Оформление заказа</h1>
+    
+    <div class="order-summary">
+        <h2>Состав заказа:</h2>
+        {% for item in cart_items %}
+        <div class="order-item">
+            <span>{{ item[3] }} ({{ item[5] }})</span>
+            <span>{{ item[4] }} руб. × {{ item[2] }}</span>
+            <span>{{ item[4] * item[2] }} руб.</span>
+        </div>
+        {% endfor %}
+        <div class="order-total">
+            <strong>Итого: {{ total_amount }} руб.</strong>
+        </div>
+    </div>
+
+    <form method="POST" class="checkout-form">
+        <div class="form-group">
+            <label for="shipping_address">Адрес доставки:</label>
+            <textarea id="shipping_address" name="shipping_address" required 
+                     placeholder="Введите полный адрес доставки">{{ default_address }}</textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Перейти к оплате</button>
+    </form>
+</div>
+{% endblock %}

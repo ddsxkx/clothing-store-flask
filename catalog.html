@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог товаров - Магазин одежды{% endblock %}
+
+{% block content %}
+<h2>Каталог товаров - {{ current_category_name }}</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="catalog-container">
+    <aside class="categories-sidebar">
+        <h3>Категории</h3>
+        <ul class="categories-list">
+            <li class="{% if not current_category_id %}active{% endif %}">
+                <a href="{{ url_for('catalog') }}">Все товары</a>
+            </li>
+            {% for category in categories %}
+            <li class="{% if current_category_id == category[0] %}active{% endif %}">
+                <a href="{{ url_for('catalog', category_id=category[0]) }}">
+                    {{ category[1] }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('categories') }}" class="btn btn-secondary">Все категории</a>
+    </aside>
+
+    <main class="products-main">
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    {% if product[5].startswith('http') %}
+                        <!-- Если URL -->
+                        <img src="{{ product[5] }}" alt="{{ product[1] }}">
+                    {% else %}
+                        <!-- Если локальный путь -->
+                        <img src="{{ url_for('static', filename=product[5].replace('/static/', '').lstrip('/')) }}" alt="{{ product[1] }}">
+                    {% endif %}
+                </div>
+
+                <div class="product-info">
+                    <div class="product-category">{{ product[4] }}</div>
+                    <h3>{{ product[1] }}</h3>
+                    <p class="price">{{ product[2] }} руб.</p>
+                    <p class="color">Цвет: {{ product[3] }}</p>
+
+                    <div class="product-actions">
+                        <a href="{{ url_for('add_to_cart', product_id=product[0]) }}" class="btn btn-primary">
+                            В корзину
+                        </a>
+                        <a href="{{ url_for('product_detail', product_id=product[0]) }}" class="btn btn-secondary">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-products">
+            <p>В этой категории пока нет товаров</p>
+            <a href="{{ url_for('catalog') }}" class="btn btn-primary">Смотреть все товары</a>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

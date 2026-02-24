@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Elegance Boutique | Магазин одежды{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!--  шапка -->
+    <header class="premium-header">
+        <div class="header-container">
+
+
+            <nav class="main-nav">
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}" class="nav-link">
+                        <i class="icon-home"></i>
+                        Главная
+                    </a>
+                    <a href="{{ url_for('catalog') }}" class="nav-link">
+                        <i class="icon-catalog"></i>
+                        Каталог
+                    </a>
+                    <a href="{{ url_for('categories') }}" class="nav-link">
+                        <i class="icon-categories"></i>
+                        Категории
+                    </a>
+                </div>
+
+                <div class="user-section">
+                    {% if session.user_id %}
+                    <div class="user-menu">
+                        <a href="{{ url_for('view_cart') }}" class="nav-link cart-link">
+                            <i class="icon-cart"></i>
+                            Корзина
+                            {% if session.get('cart_items_count', 0) > 0 %}
+                            <span class="cart-badge">{{ session.cart_items_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('my_orders') }}" class="nav-link">
+                            <i class="icon-orders"></i>
+                            Мои заказы
+                        </a>
+                        <a href="{{ url_for('admin_stats') }}" class="nav-link">
+                            <i class="icon-stats"></i>
+                            Статистика
+                        </a>
+                         <a href="{{ url_for('sql_queries') }}" class="nav-link">
+                            <i class="icon-stats"></i>
+                            10 SQL запросов
+                        </a>
+                        <div class="user-greeting">
+                            <a href="{{ url_for('logout') }}" class="logout-btn">
+                                <i class="icon-logout"></i>
+                                Выйти
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="auth-links">
+                        <a href="{{ url_for('login') }}" class="nav-link">
+                            <i class="icon-login"></i>
+                            Войти
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline">
+                            <i class="icon-register"></i>
+                            Регистрация
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- футер -->
+    <footer class="premium-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Elegance Boutique</h3>
+                <p>Магазин премиальной одежды с доставкой по всей России</p>
+            </div>
+            <div class="footer-section">
+                <h4>Контакты</h4>
+                <p>📞 +7 (999) 123-45-67</p>
+                <p>✉️ info@elegance.ru</p>
+            </div>
+            <div class="footer-section">
+                <h4>Мы в соцсетях</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link">Instagram</a>
+                    <a href="#" class="social-link">VK</a>
+                    <a href="#" class="social-link">Telegram</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Elegance Boutique. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>

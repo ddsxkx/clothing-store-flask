@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="product-detail">
+    {% if product %}
+    <div class="product-container">
+        <div class="product-image">
+            {% if product[5].startswith('http') %}
+                <img src="{{ product[5] }}" alt="{{ product[1] }}" class="main-product-image">
+            {% else %}
+                <img src="{{ url_for('static', filename=product[5].replace('/static/', '').lstrip('/')) }}" alt="{{ product[1] }}" class="main-product-image">
+            {% endif %}
+        </div>
+
+        <div class="product-info">
+            <h1>{{ product[1] }}</h1>
+            <p class="product-category">Категория: {{ product[6] }}</p>
+            <p class="product-color">Цвет: {{ product[3] }}</p>
+            {% if product[4] %}
+            <p class="product-size">Размер: {{ product[4] }}</p>
+            {% endif %}
+            <p class="product-price">{{ product[2] }} руб.</p>
+
+            <div class="product-actions">
+                <a href="{{ url_for('add_to_cart', product_id=product[0]) }}" class="btn btn-primary btn-lg">
+                    Добавить в корзину
+                </a>
+                <a href="{{ url_for('catalog') }}" class="btn btn-secondary">
+                    Вернуться в каталог
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="product-not-found">
+        <h2>Товар не найден</h2>
+        <a href="{{ url_for('catalog') }}" class="btn btn-primary">Вернуться в каталог</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if product %}
+<!-- Форма отзыва -->
+<div class="review-form">
+    <h3>Оставить отзыв</h3>
+    <form method="POST" action="{{ url_for('add_review', product_id=product[0]) }}">
+        <div class="form-group">
+            <label>Оценка:</label>
+            <select name="rating" required>
+                <option value="">Выберите оценку</option>
+                <option value="5">5 - Отлично</option>
+                <option value="4">4 - Хорошо</option>
+                <option value="3">3 - Нормально</option>
+                <option value="2">2 - Плохо</option>
+                <option value="1">1 - Ужасно</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Комментарий:</label>
+            <textarea name="comment" required placeholder="Поделитесь вашим мнением о товаре..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

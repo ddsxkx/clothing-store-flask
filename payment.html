@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="payment-container">
+    <h1>Оплата заказа</h1>
+    
+    <div class="order-info">
+        <p><strong>Номер заказа:</strong> {{ order[1] }}</p>
+        <p><strong>Сумма к оплате:</strong> {{ order[2] }} руб.</p>
+        <p><strong>Статус:</strong> {{ order[3] }}</p>
+    </div>
+
+    <form method="POST" class="payment-form">
+        <div class="form-group">
+            <label>Выберите способ оплаты:</label>
+            <div class="payment-methods">
+                <label>
+                    <input type="radio" name="payment_method" value="карта" required>
+                    Банковская карта
+                </label>
+                <label>
+                    <input type="radio" name="payment_method" value="электронные">
+                    Электронные деньги
+                </label>
+                <label>
+                    <input type="radio" name="payment_method" value="наличные">
+                    Наличные при получении
+                </label>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-success">Оплатить</button>
+        <a href="{{ url_for('view_cart') }}" class="btn btn-secondary">Вернуться в корзину</a>
+    </form>
+</div>
+{% endblock %}

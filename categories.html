@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Все категории - Elegance Boutique{% endblock %}
+
+{% block content %}
+<div class="categories-hero">
+    <div class="container">
+        <h1 class="page-title">Категории товаров</h1>
+        <p class="page-subtitle">Исследуйте нашу разнообразную коллекцию</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- ДЕРЕВО КАТЕГОРИЙ -->
+    <div class="categories-tree-section">
+        <h2 class="tree-title">Наша продукция</h2>
+        <div class="categories-tree">
+            {% for category in categories %}
+                {% if category[3] is none %}  <!-- category[3] - родительская_категория -->
+                <div class="tree-branch">
+                    <div class="parent-category">
+                        <a href="{{ url_for('catalog', category_id=category[0]) }}" class="category-link main-category">
+                            <span class="category-icon">📁</span>
+                            {{ category[1] }}
+                        </a>
+                    </div>
+
+                    <!-- Подкатегории -->
+                    <div class="subcategories">
+                        {% for subcategory in categories %}
+                            {% if subcategory[3] == category[0] %}  <!-- subcategory[3] - родительская_категория -->
+                            <div class="subcategory-item">
+                                <a href="{{ url_for('catalog', category_id=subcategory[0]) }}" class="category-link subcategory-link">
+                                    <span class="subcategory-icon">📄</span>
+                                    {{ subcategory[1] }}
+                                </a>
+
+                                <!-- Под-подкатегории -->
+                                <div class="nested-subcategories">
+                                    {% for nested in categories %}
+                                        {% if nested[3] == subcategory[0] %}  <!-- nested[3] - родительская_категория -->
+                                        <a href="{{ url_for('catalog', category_id=nested[0]) }}" class="category-link nested-link">
+                                            <span class="nested-icon">🔹</span>
+                                            {{ nested[1] }}
+                                        </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- АЛЬТЕРНАТИВНЫЙ ВИД ДЛЯ МОБИЛЬНЫХ -->
+    <div class="categories-grid-mobile">
+        {% for category in categories %}
+        <div class="category-card">
+            <div class="category-icon">
+                <div class="icon-placeholder">
+                    {% if category[3] is none %}📁{% else %}📄{% endif %}
+                </div>
+            </div>
+            <div class="category-content">
+                <h3 class="category-name">{{ category[1] }}</h3>
+                {% if category[2] %}
+                <p class="category-description">{{ category[2] }}</p>
+                {% endif %}
+                {% if category[4] %}  <!-- category[4] - название родителя -->
+                <p class="category-parent">Входит в: {{ category[4] }}</p>
+                {% endif %}
+                <a href="{{ url_for('catalog', category_id=category[0]) }}" class="btn btn-primary btn-full">
+                    Смотреть товары
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

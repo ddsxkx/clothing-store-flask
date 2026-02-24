@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cart-container">
+    <h1>Корзина</h1>
+    
+    {% if cart_items %}
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="item-info">
+                    <h3>{{ item[4] }}</h3>  <!-- название товара -->
+                    <p>Цвет: {{ item[6] }}</p>
+                    <p>Категория: {{ item[7] }}</p>
+                    <p>Цена: {{ item[5] }} руб.</p>
+                </div>
+                
+                <div class="item-controls">
+                    <form action="{{ url_for('update_cart_quantity', cart_item_id=item[0]) }}" method="POST" class="quantity-form">
+                        <label>Количество:</label>
+                        <input type="number" name="quantity" value="{{ item[2] }}" min="1" max="10">
+                        <button type="submit" class="btn btn-sm">Обновить</button>
+                    </form>
+                    
+                    <a href="{{ url_for('remove_from_cart', cart_item_id=item[0]) }}" class="btn btn-danger btn-sm">
+                        Удалить
+                    </a>
+                </div>
+                
+                <div class="item-total">
+                    <strong>{{ item[5] * item[2] }} руб.</strong>
+                </div>
+            </div>
+            {% endfor %}  <!-- ВАЖНО: Закрываем цикл for -->
+        </div>
+
+        <div class="cart-summary">
+            <div class="total-amount">
+                <h3>Общая сумма: {{ total }} руб.</h3>
+            </div>
+            
+            <div class="cart-actions">
+                <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-lg">
+                    Оформить заказ
+                </a>
+                <a href="{{ url_for('catalog') }}" class="btn btn-secondary">
+                    Продолжить покупки
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <p>Ваша корзина пуста</p>
+            <a href="{{ url_for('catalog') }}" class="btn btn-primary">Начать покупки</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

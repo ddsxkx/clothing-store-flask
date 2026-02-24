@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Elegance Boutique | Главная{% endblock %}
+
+{% block content %}
+<!-- Герой-секция -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Elegance Boutique</h1>
+            <p class="hero-subtitle">Откройте для себя мир изысканной моды и непревзойденного стиля</p>
+            <div class="hero-actions">
+    <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-large">
+        <i class="icon-catalog"></i>
+        Смотреть коллекцию
+    </a>
+    <a href="{{ url_for('categories') }}" class="btn btn-primary btn-large">
+        <i class="icon-categories"></i>
+        Все категории
+    </a>
+</div>
+        </div>
+    </div>
+</section>
+
+<!-- Популярные товары -->
+<section class="featured-products">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Популярные товары</h2>
+            <p class="section-subtitle">Самые востребованные модели этого сезона</p>
+        </div>
+
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    {% if product[5].startswith('http') %}
+                        <img src="{{ product[5] }}" alt="{{ product[1] }}">
+                    {% else %}
+                        <img src="{{ url_for('static', filename=product[5].replace('/static/', '').lstrip('/')) }}" alt="{{ product[1] }}">
+                    {% endif %}
+                    <div class="product-badge">Популярное</div>
+                </div>
+
+                <div class="product-info">
+                    <div class="product-category">{{ product[4] }}</div>
+                    <h3 class="product-name">{{ product[1] }}</h3>
+                    <p class="product-color">Цвет: {{ product[3] }}</p>
+                    <div class="product-price">{{ product[2] }} ₽</div>
+
+                    <div class="product-actions">
+                        <a href="{{ url_for('add_to_cart', product_id=product[0]) }}" class="btn btn-primary btn-full">
+                            В корзину
+                        </a>
+                        <a href="{{ url_for('product_detail', product_id=product[0]) }}" class="btn btn-secondary btn-full">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">👗</div>
+            <h2>Пока нет товаров</h2>
+            <p>Скоро здесь появятся новые коллекции</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Отзывы -->
+<section class="reviews-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title" style="color: var(--rose-800);">Отзывы клиентов</h2>
+            <p class="section-subtitle" style="color: var(--rose-600);">Что говорят наши покупатели</p>
+        </div>
+
+        {% if reviews %}
+        <div class="reviews-grid">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-user">
+                        <strong>{{ review[3] }} {{ review[4] }}</strong>
+                    </div>
+                    <div class="review-rating">
+                        {% for i in range(5) %}
+                            {% if i < review[1] %}
+                                <span class="star filled">★</span>
+                            {% else %}
+                                <span class="star">☆</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="review-product">
+                    Товар: <em>{{ review[5] }}</em>
+                </div>
+
+                <div class="review-comment">
+                    "{{ review[0] }}"
+                </div>
+
+                <div class="review-date">
+                    {{ review[2].strftime('%d.%m.%Y') }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="background: transparent;">
+            <div class="empty-icon">💬</div>
+            <h2 style="color: var(--rose-700);">Пока нет отзывов</h2>
+            <p style="color: var(--rose-600);">Будьте первым, кто оставит отзыв!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

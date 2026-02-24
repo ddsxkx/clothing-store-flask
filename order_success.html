@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="success-container">
+    <h1>Заказ успешно оплачен! 🎉</h1>
+    
+    <div class="order-details">
+        <h2>Детали заказа:</h2>
+        <p><strong>Номер заказа:</strong> {{ order[0] }}</p>
+        <p><strong>Сумма:</strong> {{ order[1] }} руб.</p>
+        <p><strong>Адрес доставки:</strong> {{ order[2] }}</p>
+        <p><strong>Дата создания:</strong> {{ order[3] }}</p>
+        {% if order[4] %}
+        <p><strong>ID транзакции:</strong> {{ order[4] }}</p>
+        <p><strong>Дата оплаты:</strong> {{ order[5] }}</p>
+        {% endif %}
+    </div>
+
+    <div class="success-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Вернуться на главную</a>
+        <a href="{{ url_for('catalog') }}" class="btn btn-secondary">Продолжить покупки</a>
+    </div>
+</div>
+{% endblock %}

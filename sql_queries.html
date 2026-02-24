@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Запросы | Elegance Boutique{% endblock %}
+
+{% block content %}
+<section class="sql-hero">
+    <div class="container">
+        <h1 class="page-title">SQL Запросы к Базе Данных</h1>
+        <p class="page-subtitle">Демонстрация 10 различных SQL-запросов с разными типами и параметрами</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="sql-stats">
+        <div class="stat-item">
+            <div class="stat-number">3</div>
+            <div class="stat-label">Статических запроса</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">2</div>
+            <div class="stat-label">С оконными функциями</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">5</div>
+            <div class="stat-label">Параметризованных</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">10</div>
+            <div class="stat-label">Всего запросов</div>
+        </div>
+    </div>
+
+    <!-- Запрос 1 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">1</span>
+            <h3 class="query-title">Топ-10 самых продаваемых товаров</h3>
+            <span class="query-type static">Статический</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Определение самых продаваемых товаров на основе количества заказов с использованием оконной функции RANK().
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    p.название AS "Название товара",
+    SUM(oi.quantity) AS "Продано, шт.",
+    RANK() OVER (ORDER BY SUM(oi.quantity) DESC) AS "Ранг"
+FROM order_items oi
+JOIN product p ON oi.product_id = p.id
+WHERE p.активен = True
+GROUP BY p.id, p.название
+ORDER BY "Продано, шт." DESC
+LIMIT 10;</code></pre>
+            </div>
+            <a href="{{ url_for('execute_query', query_id=1) }}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Выполнить запрос
+            </a>
+        </div>
+    </div>
+
+    <!-- Запрос 2 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">2</span>
+            <h3 class="query-title">Средний рейтинг товаров</h3>
+            <span class="query-type static">Статический</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Расчет среднего рейтинга товаров по отзывам, показываются только товары с минимум 2 отзывами.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    p.название AS "Товар",
+    ROUND(AVG(r.рейтинг), 2) AS "Средний рейтинг",
+    COUNT(r.id) AS "Количество отзывов"
+FROM review r
+JOIN product p ON r.товар_id = p.id
+WHERE r.одобрен = True
+GROUP BY p.id, p.название
+HAVING COUNT(r.id) >= 2
+ORDER BY "Средний рейтинг" DESC;</code></pre>
+            </div>
+            <a href="{{ url_for('execute_query', query_id=2) }}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Выполнить запрос
+            </a>
+        </div>
+    </div>
+
+    <!-- Запрос 3 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">3</span>
+            <h3 class="query-title">Активные покупатели</h3>
+            <span class="query-type static">Статический</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Список покупателей с наибольшим количеством заказов и общей суммой покупок.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    u.имя || ' ' || u.фамилия AS "Покупатель",
+    COUNT(o.id) AS "Количество заказов",
+    SUM(o.общая_сумма) AS "Общая сумма покупок"
+FROM "order" o
+JOIN "user" u ON o.пользователь_id = u.id
+GROUP BY u.id, u.имя, u.фамилия
+ORDER BY "Количество заказов" DESC
+LIMIT 8;</code></pre>
+            </div>
+            <a href="{{ url_for('execute_query', query_id=3) }}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Выполнить запрос
+            </a>
+        </div>
+    </div>
+
+    <!-- Запрос 4 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">4</span>
+            <h3 class="query-title">Рейтинг товаров по категориям</h3>
+            <span class="query-type window">Оконная функция</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Определение рейтинга товаров внутри каждой категории на основе количества продаж с использованием PARTITION BY.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    c.название AS "Категория",
+    p.название AS "Товар",
+    SUM(oi.quantity) AS "Продано, шт.",
+    RANK() OVER (PARTITION BY c.id ORDER BY SUM(oi.quantity) DESC) AS "Ранг в категории"
+FROM order_items oi
+JOIN product p ON oi.product_id = p.id
+JOIN category c ON p.категория_id = c.id
+WHERE p.активен = True
+GROUP BY c.id, c.название, p.id, p.название
+ORDER BY c.название, "Продано, шт." DESC;</code></pre>
+            </div>
+            <a href="{{ url_for('execute_query', query_id=4) }}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Выполнить запрос
+            </a>
+        </div>
+    </div>
+
+    <!-- Запрос 5 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">5</span>
+            <h3 class="query-title">Сравнение заказов со средним чеком</h3>
+            <span class="query-type window">Оконная функция</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Каждый заказ сравнивается со средним значением по всем заказам с использованием оконной функции AVG() OVER().
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    o.номер_заказа AS "Номер заказа",
+    o.общая_сумма AS "Сумма заказа",
+    ROUND(AVG(o.общая_сумма) OVER (), 2) AS "Средний чек",
+    o.общая_сумма - ROUND(AVG(o.общая_сумма) OVER (), 2) AS "Отклонение от среднего"
+FROM "order" o
+ORDER BY o.общая_сумма DESC;</code></pre>
+            </div>
+            <a href="{{ url_for('execute_query', query_id=5) }}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Выполнить запрос
+            </a>
+        </div>
+    </div>
+
+    <!-- Запрос 6 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">6</span>
+            <h3 class="query-title">Товары по ценовому диапазону</h3>
+            <span class="query-type param">Параметризованный</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Поиск товаров в указанном ценовом диапазоне. Использует параметры min_price и max_price.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    p.название AS "Название товара",
+    p.цена AS "Цена",
+    c.название AS "Категория",
+    p.цвет AS "Цвет"
+FROM product p
+JOIN category c ON p.категория_id = c.id
+WHERE p.активен = True 
+    AND p.цена BETWEEN %s AND %s
+ORDER BY p.цена DESC;</code></pre>
+            </div>
+            <form action="{{ url_for('execute_query', query_id=6) }}" method="GET" class="param-form">
+                <div class="form-group">
+                    <label for="min_price6">Минимальная цена:</label>
+                    <input type="number" id="min_price6" name="min_price" value="0" min="0" step="100">
+                </div>
+                <div class="form-group">
+                    <label for="max_price6">Максимальная цена:</label>
+                    <input type="number" id="max_price6" name="max_price" value="5000" min="0" step="100">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Выполнить с параметрами
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Запрос 7 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">7</span>
+            <h3 class="query-title">Товары выбранной категории</h3>
+            <span class="query-type param">Параметризованный</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Поиск товаров по выбранной категории. Параметр category_id берется из базы данных.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    p.название AS "Название товара",
+    p.цена AS "Цена",
+    p.цвет AS "Цвет",
+    p.размер AS "Размер"
+FROM product p
+WHERE p.активен = True 
+    AND p.категория_id = %s
+ORDER BY p.название;</code></pre>
+            </div>
+            <form action="{{ url_for('execute_query', query_id=7) }}" method="GET" class="param-form">
+                <div class="form-group">
+                    <label for="category_id7">Категория:</label>
+                    <select id="category_id7" name="category_id" required>
+                        {% for category in categories %}
+                        <option value="{{ category[0] }}">{{ category[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Выполнить с параметрами
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Запрос 8 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">8</span>
+            <h3 class="query-title">Заказы по статусу</h3>
+            <span class="query-type param">Параметризованный</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Поиск заказов по определенному статусу. Параметр status берется из базы данных.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    o.номер_заказа AS "Номер заказа",
+    u.имя || ' ' || u.фамилия AS "Покупатель",
+    o.общая_сумма AS "Сумма",
+    o.статус AS "Статус",
+    o.дата_создания AS "Дата создания"
+FROM "order" o
+JOIN "user" u ON o.пользователь_id = u.id
+WHERE o.статус = %s
+ORDER BY o.дата_создания DESC;</code></pre>
+            </div>
+            <form action="{{ url_for('execute_query', query_id=8) }}" method="GET" class="param-form">
+                <div class="form-group">
+                    <label for="status8">Статус заказа:</label>
+                    <select id="status8" name="status" required>
+                        {% for status in statuses %}
+                        <option value="{{ status[0] }}">{{ status[0] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Выполнить с параметрами
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Запрос 9 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">9</span>
+            <h3 class="query-title">Заказы пользователя</h3>
+            <span class="query-type param">Параметризованный</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Просмотр заказов конкретного пользователя. Параметр user_id берется из базы данных.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    o.номер_заказа AS "Номер заказа",
+    o.общая_сумма AS "Сумма заказа",
+    o.статус AS "Статус",
+    o.дата_создания AS "Дата",
+    COUNT(oi.product_id) AS "Количество товаров"
+FROM "order" o
+JOIN order_items oi ON o.id = oi.order_id
+WHERE o.пользователь_id = %s
+GROUP BY o.id, o.номер_заказа, o.общая_сумма, o.статус, o.дата_создания
+ORDER BY o.дата_создания DESC;</code></pre>
+            </div>
+            <form action="{{ url_for('execute_query', query_id=9) }}" method="GET" class="param-form">
+                <div class="form-group">
+                    <label for="user_id9">Пользователь:</label>
+                    <select id="user_id9" name="user_id" required>
+                        {% for user in users %}
+                        <option value="{{ user[0] }}">{{ user[1] }} {{ user[2] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Выполнить с параметрами
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Запрос 10 -->
+    <div class="query-card">
+        <div class="query-header">
+            <span class="query-badge">10</span>
+            <h3 class="query-title">Отзывы с минимальным рейтингом</h3>
+            <span class="query-type param">Параметризованный</span>
+        </div>
+        <div class="query-body">
+            <p class="query-description">
+                Поиск отзывов с рейтингом не ниже указанного значения.
+            </p>
+            <div class="sql-code">
+                <pre><code>SELECT 
+    p.название AS "Товар",
+    u.имя || ' ' || u.фамилия AS "Автор отзыва",
+    r.рейтинг AS "Оценка",
+    r.комментарий AS "Комментарий",
+    r.дата_создания AS "Дата"
+FROM review r
+JOIN product p ON r.товар_id = p.id
+JOIN "user" u ON r.пользователь_id = u.id
+WHERE r.одобрен = True 
+    AND r.рейтинг >= %s
+ORDER BY r.рейтинг DESC, r.дата_создания DESC;</code></pre>
+            </div>
+            <form action="{{ url_for('execute_query', query_id=10) }}" method="GET" class="param-form">
+                <div class="form-group">
+                    <label for="min_rating10">Минимальный рейтинг (1-5):</label>
+                    <select id="min_rating10" name="min_rating" required>
+                        <option value="1">1 звезда</option>
+                        <option value="2">2 звезды</option>
+                        <option value="3">3 звезды</option>
+                        <option value="4" selected>4 звезды</option>
+                        <option value="5">5 звезд</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Выполнить с параметрами
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

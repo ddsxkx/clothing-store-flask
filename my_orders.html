@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Мои заказы - Elegance Boutique{% endblock %}
+
+{% block content %}
+<div class="orders-hero">
+    <div class="container">
+        <h1 class="page-title">Мои заказы</h1>
+        <p class="page-subtitle">История ваших покупок и текущие заказы</p>
+    </div>
+</div>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    <i class="icon-info"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if orders %}
+  <div class="orders-stats">
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+            <span class="stat-number">{{ orders|length }}</span>
+            <span class="stat-label">Всего заказов</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+            <span class="stat-number">
+                <!-- Правильное вычисление суммы -->
+                {% set total_sum = namespace(value=0) %}
+                {% for order in orders %}
+                    {% set total_sum.value = total_sum.value + order.total %}
+                {% endfor %}
+                {{ total_sum.value|int }}₽
+            </span>
+            <span class="stat-label">Общая сумма</span>
+        </div>
+    </div>
+</div>
+
+    <div class="orders-timeline">
+        {% for order in orders %}
+        <div class="order-timeline-card">
+            <div class="timeline-marker">
+                <div class="marker-dot"></div>
+                {% if not loop.last %}
+                <div class="timeline-line"></div>
+                {% endif %}
+            </div>
+
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-meta">
+                        <div class="order-number">Заказ #{{ order.number }}</div>
+                        <div class="order-date">{{ order.date.strftime('%d %B %Y в %H:%M') }}</div>
+                    </div>
+                    <div class="order-status status-{{ order.status|lower }}">
+                        <span class="status-dot"></span>
+                        {{ order.status }}
+                    </div>
+                </div>
+
+                <div class="order-content">
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <i class="icon-location"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Адрес доставки</span>
+                                <span class="detail-value">{{ order.address }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="icon-wallet"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Сумма заказа</span>
+                                <span class="detail-value price">{{ order.total }} ₽</span>
+                            </div>
+                        </div>
+
+                        <!-- БЛОК С ТОВАРАМИ ЗАКАЗА -->
+                        <div class="order-items-preview">
+                            <h4>Товары в заказе:</h4>
+                            <div class="items-preview-list">
+                                {% if order.order_items %}
+                                    <!-- проверяем что order_items не пустой -->
+                                    {% if order.order_items|length > 0 %}
+                                        {% for item in order.order_items[:3] %} <!-- Показываем первые 3 товара -->
+                                        <div class="preview-item">
+                                            <span class="item-name">{{ item[0] }}</span>
+                                            <span class="item-quantity">×{{ item[1] }}</span>
+                                            <span class="item-price">{{ item[3] }} ₽</span>
+                                        </div>
+                                        {% endfor %}
+                                        {% if order.order_items|length > 3 %}
+                                        <div class="more-items">
+                                            <em>... и еще {{ order.order_items|length - 3 }} товаров</em>
+                                        </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="no-items">Товары не найдены</div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="no-items">Товары не найдены</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-actions">
+                        <!-- Кнопка для просмотра полного состава заказа -->
+                        {% if order.order_items and order.order_items|length > 0 %}
+                        <button class="btn btn-outline view-items-btn" data-order-id="{{ order.id }}">
+                            <i class="icon-list"></i>
+                            Весь состав
+                        </button>
+                        {% endif %}
+
+                        {% if order.status == 'создан' %}
+                        <a href="{{ url_for('payment', order_id=order.id) }}" class="btn btn-primary">
+                            <i class="icon-card"></i>
+                            Оплатить сейчас
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🛍️</div>
+        <h2>У вас пока нет заказов</h2>
+        <p>Начните shopping-путешествие и откройте для себя мир моды</p>
+        <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-large">
+            <i class="icon-bag"></i>
+            Начать покупки
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Модальное окно для полного состава заказа -->
+<div id="orderItemsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalTitle">Состав заказа</h3>
+        <div id="orderItemsList"></div>
+    </div>
+</div>
+
+<script>
+// JavaScript для модального окна
+document.querySelectorAll('.view-items-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const orderId = this.getAttribute('data-order-id');
+        loadOrderItems(orderId);
+    });
+});
+
+function loadOrderItems(orderId) {
+    const list = document.getElementById('orderItemsList');
+    list.innerHTML = '<div class="loading">Загрузка...</div>';
+
+    document.getElementById('orderItemsModal').style.display = 'block';
+
+    fetch(`/api/order/${orderId}/items`)
+        .then(response => response.json())
+        .then(data => {
+            let html = '<div class="order-items-list">';
+
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => {
+                    html += `
+                    <div class="order-item-row">
+                        <div class="item-image">
+                            <img src="${item.image || '/static/images/placeholder.jpg'}"
+                                 alt="${item.name}"
+                                 onerror="this.src='/static/images/placeholder.jpg'">
+                        </div>
+                        <div class="item-info">
+                            <h4>${item.name}</h4>
+                            <p>Количество: ${item.quantity}</p>
+                            <p>Цена: ${item.price} ₽</p>
+                            <p class="item-total">Сумма: ${item.total} ₽</p>
+                        </div>
+                    </div>`;
+                });
+
+                html += `
+                <div class="order-total-summary">
+                    <hr>
+                    <div class="total-row">
+                        <strong>Итого:</strong>
+                        <strong>${data.total} ₽</strong>
+                    </div>
+                </div>`;
+            } else {
+                html += '<div class="empty-items">Товары не найдены</div>';
+            }
+
+            html += '</div>';
+            list.innerHTML = html;
+            document.getElementById('modalTitle').textContent = `Заказ #${data.order_number}`;
+        })
+        .catch(error => {
+            list.innerHTML = '<div class="error">Ошибка при загрузке данных</div>';
+        });
+}
+
+// Закрытие модального окна
+document.querySelector('.close').addEventListener('click', function() {
+    document.getElementById('orderItemsModal').style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('orderItemsModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
